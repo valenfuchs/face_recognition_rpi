@@ -58,7 +58,7 @@ while True:
             old_file_path = file_path.replace("dataset", "old_dataset")
             os.rename(file_path, old_file_path)
         # Write the newer images after moving the old images
-        cv2.imwrite(file_path, frame_gray[y:y+h, x:x+w])
+        cv2.imwrite(file_path, frameGray[y:y+h, x:x+w])
 
 
     # Display the original frame to the user
