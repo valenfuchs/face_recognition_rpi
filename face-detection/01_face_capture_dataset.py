@@ -1,6 +1,9 @@
 import cv2
 import os
 from picamera2 import Picamera2
+import csv
+
+csv_file = 'names.csv'
 
 # Constants
 COUNT_LIMIT = 30
@@ -13,7 +16,23 @@ WEIGHT=3  #font-thickness
 FACE_DETECTOR=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 # For each person, enter one numeric face id
-face_id = input('\n----Enter User-id and press <return>----')
+with open(csv_file, mode='r') as file:
+    reader = csv.reader(file)
+    next(reader) #salteamos el header
+    last_row = None
+    for row in reader:
+        last_row = row
+
+if last_row is not None:
+    face_id = int(last_row[1])+1
+else:
+    face_id = 1
+name = input('\n----Enter name and press <return>----')
+
+with open(csv_file, mode='a', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow([name, face_id])
+
 print("\n [INFO] Initializing face capture. Look at the camera and wait!")
 
 # Create an instance of the PiCamera2 object
@@ -74,6 +93,6 @@ while True:
         break
 
 # Release the camera and close all windows
-print("\n [INFO] Exiting Program and cleaning up stuff")
+print("\n [INFO] Done! Thank you")
 cam.stop()
 cv2.destroyAllWindows()
