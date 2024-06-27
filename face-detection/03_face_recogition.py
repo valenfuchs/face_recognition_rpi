@@ -18,11 +18,11 @@ face_detector=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read('trainer/trainer.yml')
 # names related to id
-names = [None]
+names = []
 with open(csv_file, mode='r') as file:
     reader = csv.reader(file)
     for row in reader:
-        names.append[0]
+        names.append(row[0])
 
 # Create an instance of the PiCamera2 object
 cam = Picamera2()
