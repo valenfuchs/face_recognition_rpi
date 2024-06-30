@@ -111,7 +111,7 @@ def start_capture():
         print("Recognition script executed successfully.")
 
         # Redirect to capturing.html after successful execution
-        return redirect(url_for('capturing'))
+        return redirect(url_for('/templates/capturing.html'))
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing subprocess: {e}")
