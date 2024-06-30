@@ -20,7 +20,7 @@ FACE_DETECTOR = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('register.html')
 
 def gen_frames(name):
     # For each person, enter one numeric face id
@@ -95,7 +95,7 @@ def video_feed():
 @app.route('/start_capture', methods=['POST'])
 def start_capture():
     name = request.form['name']
-    return redirect(url_for('video_feed', name=name))
+    return render_template('capturing.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
