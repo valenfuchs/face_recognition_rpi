@@ -11,9 +11,9 @@
     <div class="container">
         <h1>Register new user</h1>
         
-        <form method="post" action="/start_capture">
+        <form method="post" action="/start_capture" onsubmit="navigateToCapturing()">
             <input type="text" name="name" placeholder="Enter your name" required>
-            <button id="submit" onclick="navigateTo('capturing.html')">Start Capture</button>
+            <button id="submit">Start Capture</button>
         </form>
         <div class="buttons">
             <button id="returnButton" onclick="navigateTo('login.html')">I am registered</button>
@@ -27,7 +27,12 @@
                 window.location.href = page;
             }, 500); // Duration of the fade-out animation
         }
-        
+        function navigateToCapturing() {
+            // Handle the form submission first
+            // After successful submission, navigate to '/capturing'
+            navigateTo('capturing.html');
+            return false; // Prevent default form submission
+        }
     </script>
 </body>
 </html>

@@ -1,124 +1,121 @@
-# Archivo: app.py
 import cv2
 import os
+import subprocess
 from picamera2 import Picamera2
 import csv
-from flask import Flask, request, render_template
-import subprocess
+from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html') 
+    return render_template('index.html')
 
 @app.route('/start_capture', methods=['POST'])
 def start_capture():
-
     csv_file = 'names.csv'
 
-    # Constants
+    # Constants for face capture
     COUNT_LIMIT = 30
-    POS=(30,60)  #top-left
-    FONT=cv2.FONT_HERSHEY_COMPLEX #font type for text overlay
-    HEIGHT=1.5  #font_scale
-    TEXTCOLOR=(0,0,255)  #BGR- RED
-    BOXCOLOR=(255,0,255) #BGR- BLUE
-    WEIGHT=3  #font-thickness
-    FACE_DETECTOR=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    POS = (30, 60)  # top-left
+    FONT = cv2.FONT_HERSHEY_COMPLEX
+    HEIGHT = 1.5
+    TEXTCOLOR = (0, 0, 255)
+    BOXCOLOR = (255, 0, 255)
+    WEIGHT = 3
+    FACE_DETECTOR = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-    # For each person, enter one numeric face id
+    # Read last face ID from CSV or initialize
     with open(csv_file, mode='r') as file:
         reader = csv.reader(file)
-        next(reader) #salteamos el header
+        next(reader)  # skip header
         last_row = None
         for row in reader:
             last_row = row
 
     if last_row is not None:
-        face_id = int(last_row[1])+1
+        face_id = int(last_row[1]) + 1
     else:
         face_id = 1
+
+    # Get name from form submission
     name = request.form.get('name')
 
+    # Write new name and ID to CSV
     with open(csv_file, mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([name, face_id])
 
-    # Create an instance of the PiCamera2 object
+    # Initialize PiCamera2 object
     cam = Picamera2()
-    ## Set the resolution of the camera preview
     cam.preview_configuration.main.size = (640, 360)
     cam.preview_configuration.main.format = "RGB888"
-    cam.preview_configuration.controls.FrameRate=30
+    cam.preview_configuration.controls.FrameRate = 30
     cam.preview_configuration.align()
     cam.configure("preview")
     cam.start()
 
-    count=0
+    count = 0
 
     while True:
-        # Capture a frame from the camera
-        frame=cam.capture_array()
-        # Display count of images taken
-        # cv2.putText(frame,'Count:'+str(int(count)),POS,FONT,HEIGHT,TEXTCOLOR,WEIGHT)
+        # Capture frame from camera
+        frame = cam.capture_array()
 
-        # Convert frame from BGR to grayscale
-        frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # Create a DS faces- array with 4 elements- x,y coordinates (top-left corner), width and height
-        faces = FACE_DETECTOR.detectMultiScale( # detectMultiScale has 4 parameters
-                frameGray,      # The grayscale frame to detect
-                scaleFactor=1.1,# how much the image size is reduced at each image scale-10% reduction
-                minNeighbors=5, # how many neighbors each candidate rectangle should have to retain it
-                minSize=(30, 30)# Minimum possible object size. Objects smaller than this size are ignored.
+        # Convert frame to grayscale
+        frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Detect faces
+        faces = FACE_DETECTOR.detectMultiScale(
+            frame_gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(30, 30)
         )
-        for (x,y,w,h) in faces:
-            # Create a bounding box across the detected face
-            cv2.rectangle(frame, (x,y), (x+w,y+h), BOXCOLOR, 3) # 5 parameters - frame, topleftcoords,bottomrightcooords,boxcolor,thickness
-            count += 1 # increment count
 
-            # if dataset folder doesnt exist create:
+        for (x, y, w, h) in faces:
+            # Draw bounding box around face
+            cv2.rectangle(frame, (x, y), (x + w, y + h), BOXCOLOR, 3)
+            count += 1
+
+            # Ensure dataset folder exists
             if not os.path.exists("dataset"):
                 os.makedirs("dataset")
-            # Save the captured bounded-grayscaleimage into the datasets folder only if the same file doesn't exist
+
+            # Save captured grayscale image
             file_path = os.path.join("dataset", f"User.{face_id}.{count}.jpg")
             if os.path.exists(file_path):
-                # Move the existing file to the "old_dataset" folder
                 old_file_path = file_path.replace("dataset", "old_dataset")
                 os.rename(file_path, old_file_path)
-            # Write the newer images after moving the old images
-            cv2.imwrite(file_path, frameGray[y:y+h, x:x+w])
+            cv2.imwrite(file_path, frame_gray[y:y + h, x:x + w])
 
-
-        # Display the original frame to the user
+        # Display frame to user
         cv2.imshow('FaceCapture', frame)
-        # Wait for 30 milliseconds for a key event (extract sigfigs) and exit if 'ESC' or 'q' is pressed
+
+        # Exit conditions
         key = cv2.waitKey(100) & 0xff
-        # Checking keycode
-        if key == 27:  # ESCAPE key
-            break
-        elif key == 113:  # q key
-            break
-        elif count >= COUNT_LIMIT: # Take COUNT_LIMIT face samples and stop video capture
+        if key == 27 or key == 113 or count >= COUNT_LIMIT:
             break
 
-    # Release the camera and close all windows
+    # Release camera and close windows
     print("\n [INFO] Done! Thank you")
     cam.stop()
     cv2.destroyAllWindows()
 
     try:
-        # After capturing, start training script
-        subprocess.run(['python', 'training.py'], wait=True)
+        # Execute training script
+        subprocess.run(['python', 'training.py'], check=True)
         print("Training script executed successfully.")
 
-        # After training, start recognition script
-        subprocess.run(['python', 'recognition.py'], wait=True)
+        # Execute recognition script
+        subprocess.run(['python', 'recognition.py'], check=True)
         print("Recognition script executed successfully.")
 
-        return "Capture, Training, and Recognition executed successfully."
-    except Exception as e:
-        return f"Error: {e}"
+        # Redirect to capturing.html after successful execution
+        return redirect(url_for('capturing'))
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing subprocess: {e}")
+        return "Error occurred during execution."
 
 if __name__ == '__main__':
     app.run(debug=True)
