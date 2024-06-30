@@ -108,11 +108,12 @@ def start_capture():
     cv2.destroyAllWindows()
 
     try:
-        subprocess.run(['python', 'training.py'])
+        # After capturing, start training script
+        subprocess.run(['python', 'training.py'], wait=True)
         print("Training script executed successfully.")
 
-        # After training, execute another script
-        subprocess.run(['python', 'recognition.py'])
+        # After training, start recognition script
+        subprocess.run(['python', 'recognition.py'], wait=True)
         print("Recognition script executed successfully.")
 
         return "Capture, Training, and Recognition executed successfully."
