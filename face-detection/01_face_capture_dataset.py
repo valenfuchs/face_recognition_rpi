@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, redirect, url_for
 import cv2
 import os
 from picamera2 import Picamera2
@@ -18,11 +18,17 @@ BOXCOLOR = (255, 0, 255)  # BGR- BLUE
 WEIGHT = 3  # font-thickness
 FACE_DETECTOR = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
+# Initialize PiCamera2 object
+cam = Picamera2()
+
 @app.route('/')
 def index():
     return render_template('register.html')
 
-def gen_frames(name):
+@app.route('/start_capture', methods=['POST'])
+def start_capture():
+    name = request.form['name']
+
     # For each person, enter one numeric face id
     with open(csv_file, mode='r') as file:
         reader = csv.reader(file)
@@ -40,16 +46,18 @@ def gen_frames(name):
         writer = csv.writer(file)
         writer.writerow([name, face_id])
 
-    print("\n [INFO] Initializing face capture. Look at the camera and wait!")
+    # Start the face capturing process in a separate thread
+    import threading
+    capture_thread = threading.Thread(target=capture_faces, args=(name, face_id))
+    capture_thread.start()
 
-    # Create an instance of the PiCamera2 object
-    cam = Picamera2()
-    ## Set the resolution of the camera preview
-    cam.preview_configuration.main.size = (640, 480)  # Adjusted resolution for better display
-    cam.preview_configuration.main.format = "RGB888"
-    cam.preview_configuration.controls.FrameRate = 30
-    cam.preview_configuration.align()
-    cam.configure("preview")
+    return redirect(url_for('capturing'))
+
+@app.route('/capturing')
+def capturing():
+    return render_template('capturing.html')
+
+def capture_faces(name, face_id):
     cam.start()
 
     count = 0
@@ -89,13 +97,7 @@ def gen_frames(name):
 
 @app.route('/video_feed')
 def video_feed():
-    name = request.args.get('name', 'Unknown')  # Default name is 'Unknown' if not provided
-    return Response(gen_frames(name), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/start_capture', methods=['POST'])
-def start_capture():
-    name = request.form['name']
-    return render_template('capturing.html', name=name)  # Pass 'name' to template for display
+    return Response(capture_faces(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
