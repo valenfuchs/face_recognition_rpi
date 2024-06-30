@@ -3,6 +3,7 @@ import cv2
 import os
 from picamera2 import Picamera2
 import csv
+import threading
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
@@ -18,51 +19,15 @@ BOXCOLOR = (255, 0, 255)  # BGR- BLUE
 WEIGHT = 3  # font-thickness
 FACE_DETECTOR = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-# Initialize PiCamera2 object
-cam = Picamera2()
-
-@app.route('/')
-def index():
-    return render_template('register.html')
-
-@app.route('/start_capture', methods=['POST'])
-def start_capture():
-    name = request.form['name']
-
-    # For each person, enter one numeric face id
-    with open(csv_file, mode='r') as file:
-        reader = csv.reader(file)
-        next(reader)  # skip the header
-        last_row = None
-        for row in reader:
-            last_row = row
-
-    if last_row is not None:
-        face_id = int(last_row[1]) + 1
-    else:
-        face_id = 1
-
-    with open(csv_file, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([name, face_id])
-
-    # Start the face capturing process in a separate thread
-    import threading
-    capture_thread = threading.Thread(target=capture_faces, args=(name, face_id))
-    capture_thread.start()
-
-    return redirect(url_for('capturing'))
-
-@app.route('/capturing')
-def capturing():
-    return render_template('capturing.html')
-
+# Function to capture faces
 def capture_faces(name, face_id):
+    cam = Picamera2()  # Initialize the camera inside the function
     cam.start()
 
     count = 0
+    stop_capture = False
 
-    while True:
+    while not stop_capture:
         frame = cam.capture_array()
 
         frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -95,6 +60,46 @@ def capture_faces(name, face_id):
     print("\n [INFO] Done! Thank you")
     cam.stop()
 
+# Route to display the initial registration form
+@app.route('/')
+def index():
+    return render_template('register.html')
+
+# Route to handle form submission and start face capture
+@app.route('/start_capture', methods=['POST'])
+def start_capture():
+    name = request.form['name']
+
+    # For each person, enter one numeric face id
+    with open(csv_file, mode='r') as file:
+        reader = csv.reader(file)
+        next(reader)  # skip the header
+        last_row = None
+        for row in reader:
+            last_row = row
+
+    if last_row is not None:
+        face_id = int(last_row[1]) + 1
+    else:
+        face_id = 1
+
+    with open(csv_file, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([name, face_id])
+
+    # Start the face capturing process in a separate thread
+    global capture_thread
+    capture_thread = threading.Thread(target=capture_faces, args=(name, face_id))
+    capture_thread.start()
+
+    return redirect(url_for('capturing'))
+
+# Route to display the capturing process
+@app.route('/capturing')
+def capturing():
+    return render_template('capturing.html')
+
+# Route to serve video feed to the capturing.html template
 @app.route('/video_feed')
 def video_feed():
     return Response(capture_faces(), mimetype='multipart/x-mixed-replace; boundary=frame')
