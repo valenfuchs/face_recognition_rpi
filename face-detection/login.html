@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Interface</title>
+    <link rel="stylesheet" href="login_style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Please look at the camera.</h1>
+        <div class="camera">
+            <!-- Placeholder for the camera feed -->
+            <video id="cameraFeed" width="640" height="480" autoplay></video>
+        </div>
+        <div class="buttons">
+            <button id="returnButton" onclick="navigateTo('main_index.html')">Return</button>
+        </div>
+    </div>
+    <script>
+        // Function to handle navigation with fade-in effect
+        function navigateTo(page) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = page;
+            }, 500); // Duration of the fade-out animation
+        }
+    </script>
+</body>
+</html>

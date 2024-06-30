@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Interface</title>
+    <link rel="stylesheet" href="register_styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Register new user</h1>
+        
+        <form method="post" action="/start_capture">
+            <input type="text" name="name" placeholder="Enter your name" required>
+            <button id="submit">Click to train new faces</button>
+        </form>
+        <div class="buttons">
+            <button id="returnButton" onclick="navigateTo('login.html')">I am registered</button>
+        </div>
+    </div>
+    <script>
+        // Function to handle navigation with fade-in effect
+        function navigateTo(page) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = page;
+            }, 500); // Duration of the fade-out animation
+        }
+    </script>
+</body>
+</html>
