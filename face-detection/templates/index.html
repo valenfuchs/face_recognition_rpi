@@ -13,7 +13,10 @@
         
         <input type="text" name="name" placeholder="Enter your name" required>
         
-        <button id="submit" onclick="navigateToCapturing()">Start Capture</button>
+        <form method="post" action="/start_capture">
+            <input type="text" name="name" placeholder="Enter your name" required>
+            <button id="submit" onclick="navigateToCapturing()">Start Capture</button>
+        </form>
 
         <div class="buttons">
             <button id="returnButton" onclick="navigateToLogin()">I am registered</button>
