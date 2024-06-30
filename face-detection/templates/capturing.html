@@ -29,10 +29,11 @@
         async function initCameraFeed() {
             const videoElement = document.getElementById('cameraFeed');
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                videoElement.srcObject = stream;
+                // Fetch the video feed from Flask endpoint
+                const stream = await fetch('/video_feed');
+                videoElement.srcObject = await stream.blob();
             } catch (err) {
-                console.error('Error accessing camera:', err);
+                console.error('Error accessing camera feed:', err);
             }
         }
 

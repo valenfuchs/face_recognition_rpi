@@ -1,7 +1,8 @@
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, render_template, Response, request
 import cv2
 import os
-from picamera2 import Picamera2
+from picamera import PiCamera
+from picamera.array import PiRGBArray
 import csv
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -18,9 +19,15 @@ BOXCOLOR = (255, 0, 255)  # BGR- BLUE
 WEIGHT = 3  # font-thickness
 FACE_DETECTOR = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-@app.route('/')
-def index():
-    return render_template('register.html')
+# Initialize PiCamera and PiRGBArray
+camera = PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 30
+rawCapture = PiRGBArray(camera, size=(640, 480))
+
+# Allow camera to warm up
+import time
+time.sleep(0.1)
 
 def gen_frames(name):
     # For each person, enter one numeric face id
@@ -42,22 +49,12 @@ def gen_frames(name):
 
     print("\n [INFO] Initializing face capture. Look at the camera and wait!")
 
-    # Create an instance of the PiCamera2 object
-    cam = Picamera2()
-    ## Set the resolution of the camera preview
-    cam.preview_configuration.main.size = (640, 360)
-    cam.preview_configuration.main.format = "RGB888"
-    cam.preview_configuration.controls.FrameRate = 30
-    cam.preview_configuration.align()
-    cam.configure("preview")
-    cam.start()
-
     count = 0
 
-    while True:
-        frame = cam.capture_array()
+    for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+        img = frame.array
 
-        frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frameGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = FACE_DETECTOR.detectMultiScale(
             frameGray,
             scaleFactor=1.1,
@@ -65,7 +62,7 @@ def gen_frames(name):
             minSize=(30, 30)
         )
         for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), BOXCOLOR, 3)
+            cv2.rectangle(img, (x, y), (x+w, y+h), BOXCOLOR, 3)
             count += 1
 
             if not os.path.exists("dataset"):
@@ -76,16 +73,21 @@ def gen_frames(name):
                 os.rename(file_path, old_file_path)
             cv2.imwrite(file_path, frameGray[y:y+h, x:x+w])
 
-        ret, buffer = cv2.imencode('.jpg', frame)
+        ret, buffer = cv2.imencode('.jpg', img)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        rawCapture.truncate(0)
 
         if count >= COUNT_LIMIT:
             break
 
     print("\n [INFO] Done! Thank you")
-    cam.stop()
+
+@app.route('/')
+def index():
+    return render_template('register.html')
 
 @app.route('/video_feed')
 def video_feed():
@@ -95,7 +97,7 @@ def video_feed():
 @app.route('/start_capture', methods=['POST'])
 def start_capture():
     name = request.form['name']
-    return render_template('capturing.html')
+    return render_template('capturing.html', name=name)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
