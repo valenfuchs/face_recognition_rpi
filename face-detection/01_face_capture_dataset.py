@@ -4,7 +4,7 @@ import os
 from picamera2 import Picamera2
 import csv
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
 csv_file = 'names.csv'
 
