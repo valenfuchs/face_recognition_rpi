@@ -4,12 +4,13 @@ import os
 from picamera2 import Picamera2
 import csv
 from flask import Flask, request, render_template
+import subprocess
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')  # Replace with your HTML filename
+    return render_template('index.html') 
 
 @app.route('/start_capture', methods=['POST'])
 def start_capture():
@@ -105,6 +106,12 @@ def start_capture():
     print("\n [INFO] Done! Thank you")
     cam.stop()
     cv2.destroyAllWindows()
+
+    try:
+        subprocess.run(['python', 'training.py'])  # Replace 'python' with your Python interpreter if needed
+        return "Capture and Training started for " + name
+    except Exception as e:
+        return "Error: " + str(e)
 
 if __name__ == '__main__':
     app.run(debug=True)
