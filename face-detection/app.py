@@ -5,7 +5,7 @@ from picamera2 import Picamera2
 import csv
 from flask import Flask, request, render_template, redirect, url_for
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
 @app.route('/')
 def index():
@@ -111,7 +111,7 @@ def start_capture():
         print("Recognition script executed successfully.")
 
         # Redirect to capturing.html after successful execution
-        return redirect(url_for('/templates/capturing.html'))
+        return redirect(url_for('capturing'))
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing subprocess: {e}")
