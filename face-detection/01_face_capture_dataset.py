@@ -51,7 +51,7 @@ while True:
     # Capture a frame from the camera
     frame=cam.capture_array()
     # Display count of images taken
-    cv2.putText(frame,'Count:'+str(int(count)),POS,FONT,HEIGHT,TEXTCOLOR,WEIGHT)
+    # cv2.putText(frame,'Count:'+str(int(count)),POS,FONT,HEIGHT,TEXTCOLOR,WEIGHT)
 
     # Convert frame from BGR to grayscale
     frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
