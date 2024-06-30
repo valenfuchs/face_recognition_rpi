@@ -1,6 +1,8 @@
 import cv2
 import os
 import numpy as np
+import logging
+
 
 # Using LBPH(Local Binary Patterns Histograms) recognizer
 recognizer=cv2.face.LBPHFaceRecognizer_create()
