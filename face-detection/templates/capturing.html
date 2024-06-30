@@ -9,10 +9,6 @@
 <body>
     <div class="container">
         <h1>Capturing...</h1>
-        <div class="camera">
-            <!-- Placeholder for the camera feed -->
-            <video id="cameraFeed" width="640" height="480" autoplay></video>
-        </div>
         
     </div>
 
@@ -25,20 +21,6 @@
             }, 500); // Duration of the fade-out animation
         }
 
-        // Function to initialize the camera feed
-        async function initCameraFeed() {
-        const videoElement = document.getElementById('cameraFeed');
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoElement.srcObject = stream;
-        } catch (err) {
-            console.error('Error accessing camera:', err);
-        }}
-
-        // Call the camera initialization function when the page loads
-        window.onload = function() {
-            initCameraFeed();
-        };
     </script>
 </body>
 </html>
