@@ -12,10 +12,11 @@
         <h1>Register new user</h1>
         
         <input type="text" name="name" placeholder="Enter your name" required>
-        <button id="submit" onclick="navigateTo('/templates/capturing.html')">Start Capture</button>
+        
+        <button id="submit" onclick="navigateToCapturing()">Start Capture</button>
 
         <div class="buttons">
-            <button id="returnButton" onclick="navigateTo('/templates/login.html')">I am registered</button>
+            <button id="returnButton" onclick="navigateToLogin()">I am registered</button>
         </div>
     </div>
     <script>
@@ -24,6 +25,13 @@
             setTimeout(() => {
                 window.location.href = page;
             }, 500); // Duration of the fade-out animation
+        }
+        function navigateToCapturing() {
+        navigateTo('/capturing');
+        }
+
+        function navigateToLogin() {
+            navigateTo('/login.html');
         }
     </script>
 </body>

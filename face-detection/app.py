@@ -110,12 +110,19 @@ def start_capture():
         subprocess.run(['python', 'recognition.py'], check=True)
         print("Recognition script executed successfully.")
 
-        # Redirect to capturing.html after successful execution
         return redirect(url_for('capturing'))
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing subprocess: {e}")
         return "Error occurred during execution."
+
+@app.route('/capturing')
+def capturing():
+    return render_template('capturing.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
