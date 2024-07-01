@@ -99,6 +99,8 @@ def start_capture():
     # Release camera and close windows
     print("\n [INFO] Done! Thank you")
     cam.stop()
+    cam.stop_preview()
+
     cv2.destroyAllWindows()
 
     try:
