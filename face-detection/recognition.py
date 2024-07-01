@@ -3,6 +3,7 @@ import csv
 import os 
 import numpy as np
 from picamera2 import Picamera2
+import time
 
 csv_file = 'names.csv'
 
@@ -35,13 +36,12 @@ cam.preview_configuration.align()
 cam.configure("preview")
 cam.start()
 
+recognized = 0
+
 while True:
-    # Capture a frame from the camera
     frame=cam.capture_array()
 
-    #Convert fram from BGR to grayscale
     frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #Create a DS faces- array with 4 elements- x,y coordinates top-left corner), width and height
     faces = face_detector.detectMultiScale(
             frameGray,      # The grayscale frame to detect
             scaleFactor=1.1,# how much the image size is reduced at each image scale-10% reduction
@@ -49,38 +49,33 @@ while True:
             minSize=(150, 150)# Minimum possible object size. Objects smaller than this size are ignored.
             )
     for(x,y,w,h) in faces:
-        namepos=(x+5,y-5) #shift right and up/outside the bounding box from top
-        confpos=(x+5,y+h-5) #shift right and up/intside the bounding box from bottom
-        #create a bounding box across the detected face
+        namepos=(x+5,y-5) 
+        confpos=(x+5,y+h-5) 
         cv2.rectangle(frame, (x,y), (x+w,y+h), boxColor, 3) #5 parameters - frame, topleftcoords,bottomrightcooords,boxcolor,thickness
 
-        #recognizer.predict() method takes the ROI as input and
-        #returns the predicted label (id) and confidence score for the given face region.
         id, confidence = recognizer.predict(frameGray[y:y+h,x:x+w])
         
         # If confidence is less than 100, it is considered a perfect match
         if confidence < 100:
             id = names[id]
-            confidence = f"{100 - confidence:.0f}%"
+            confidence_value = 100 - confidence
+            confidence_text = f"{confidence_value:.0f}%"
         else:
             id = "unknown"
-            confidence = f"{100 - confidence:.0f}%"
+            confidence_text = f"{100 - confidence:.0f}%"
 
         #Display name and confidence of person who's face is recognized
         cv2.putText(frame, str(id), namepos, font, height, nameColor, 2)
-        cv2.putText(frame, str(confidence), confpos, font, height, confColor, 1)
+        cv2.putText(frame, str(confidence_text), confpos, font, height, confColor, 1)
 
-    # Display realtime capture output to the user
+        if confidence_value > 70:
+            recognized +=1
+
     cv2.imshow('Raspi Face Recognizer',frame)
-
-    # Wait for 30 milliseconds for a key event (extract sigfigs) and exit if 'ESC' or 'q' is pressed
-    key = cv2.waitKey(100) & 0xff
-    #Checking keycode
-    if key == 27:  # ESCAPE key
+    if recognized >= 3:
+        time.sleep(5)
         break
-    elif key == 113:  # q key
-        break
-
+    
 # Release the camera and close all windows
 print("\n [INFO] Exiting Program and cleaning up stuff")
 cam.stop()
