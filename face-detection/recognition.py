@@ -48,6 +48,7 @@ while True:
             minNeighbors=5, # how many neighbors each candidate rectangle should have to retain it
             minSize=(150, 150)# Minimum possible object size. Objects smaller than this size are ignored.
             )
+    
     for(x,y,w,h) in faces:
         namepos=(x+5,y-5) 
         confpos=(x+5,y+h-5) 
@@ -71,9 +72,16 @@ while True:
             recognized +=1
 
     cv2.imshow('Raspi Face Recognizer',frame)
-    if recognized >= 3:
-        time.sleep(5)
+   # if recognized >= 3:
+    #    time.sleep(5)
+     #   break
+    key = cv2.waitKey(100) & 0xff
+    #Checking keycode
+    if key == 27:  # ESCAPE key
         break
+    elif key == 113:  # q key
+        break
+
     
 # Release the camera and close all windows
 print("\n [INFO] Exiting Program and cleaning up stuff")
