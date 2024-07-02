@@ -72,9 +72,9 @@ while True:
             recognized +=1
 
     cv2.imshow('Raspi Face Recognizer',frame)
-   # if recognized >= 3:
-    #    time.sleep(5)
-     #   break
+    if recognized >= 3:
+        time.sleep(5)
+        break
     key = cv2.waitKey(100) & 0xff
     #Checking keycode
     if key == 27:  # ESCAPE key
