@@ -58,8 +58,7 @@ while True:
         # If confidence is less than 100, it is considered a perfect match
         if confidence < 100:
             id = names[id]
-            confidence_value = 100 - confidence
-            confidence_text = f"{confidence_value:.0f}%"
+            confidence_text = f"{100 - confidence:.0f}%"
         else:
             id = "unknown"
             confidence_text = f"{100 - confidence:.0f}%"
@@ -68,7 +67,7 @@ while True:
         cv2.putText(frame, str(id), namepos, font, height, nameColor, 2)
         cv2.putText(frame, str(confidence_text), confpos, font, height, confColor, 1)
 
-        if confidence_value > 70:
+        if (100 - confidence) > 70:
             recognized +=1
 
     cv2.imshow('Raspi Face Recognizer',frame)

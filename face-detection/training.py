@@ -1,7 +1,6 @@
 import cv2
 import os
 import numpy as np
-import logging
 
 
 # Using LBPH(Local Binary Patterns Histograms) recognizer
