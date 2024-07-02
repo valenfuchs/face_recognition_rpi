@@ -68,7 +68,7 @@ while True:
         cv2.putText(frame, str(id), namepos, font, height, nameColor, 2)
         cv2.putText(frame, str(confidence_text), confpos, font, height, confColor, 1)
 
-        if (100 - confidence) > 70:
+        if (100 - confidence) > 64:
             recognized +=1
 
     cv2.imshow('Raspi Face Recognizer',frame)
