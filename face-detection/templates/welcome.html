@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome</h1>
+    </div>
+
+    <script>
+        // Function to handle navigation with fade-out effect
+        function navigateTo(page) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = page;
+            }, 500); // Duration of the fade-out animation
+        }
+    </script>
+</body>
+</html>
+

@@ -13,7 +13,6 @@ def index():
 def start_capture():
     csv_file = 'names.csv'
 
-    # Read last face ID from CSV or initialize
     with open(csv_file, mode='r') as file:
         reader = csv.reader(file)
         next(reader)  # skip header
@@ -60,6 +59,10 @@ def capturing():
 @app.route('/login')
 def login():
     return render_template('login.html')
+
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

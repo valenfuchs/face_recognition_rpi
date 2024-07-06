@@ -60,6 +60,8 @@ while True:
         if confidence < 100:
             id = names[id]
             confidence_text = f"{100 - confidence:.0f}%"
+            if (100 - confidence) > 64:
+                recognized +=1
         else:
             id = "unknown"
             confidence_text = f"{100 - confidence:.0f}%"
@@ -67,13 +69,11 @@ while True:
         #Display name and confidence of person who's face is recognized
         cv2.putText(frame, str(id), namepos, font, height, nameColor, 2)
         cv2.putText(frame, str(confidence_text), confpos, font, height, confColor, 1)
-
-        if (100 - confidence) > 64:
-            recognized +=1
-
+        
     cv2.imshow('Raspi Face Recognizer',frame)
     if recognized >= 3:
-        time.sleep(5)
+        print("\n [INFO] Face Recognized")
+        time.sleep(2)
         break
     key = cv2.waitKey(100) & 0xff
     #Checking keycode
@@ -82,7 +82,6 @@ while True:
     elif key == 113:  # q key
         break
 
-    
 # Release the camera and close all windows
 print("\n [INFO] Exiting Program and cleaning up stuff")
 cam.stop()
