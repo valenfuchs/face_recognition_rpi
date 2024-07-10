@@ -4,6 +4,8 @@ import os
 import numpy as np
 from picamera2 import Picamera2
 import time
+from telegram_bot import enviarMensaje
+from led import abrirPuerta
 
 csv_file = 'names.csv'
 
@@ -37,7 +39,7 @@ cam.configure("preview")
 cam.start()
 
 recognized = 0
-
+timer = time.time()
 while True:
     frame=cam.capture_array()
 
@@ -58,10 +60,15 @@ while True:
         
         # If confidence is less than 100, it is considered a perfect match
         if confidence < 100:
-            id = names[id]
+            id = names[id+1]
             confidence_text = f"{100 - confidence:.0f}%"
             if (100 - confidence) > 64:
                 recognized +=1
+                abrirPuerta(True)
+                enviarMensaje(True, id)
+            elif (time.time() - timer > 10):
+                abrirPuerta(False)
+                enviarMensaje(False, "None")
         else:
             id = "unknown"
             confidence_text = f"{100 - confidence:.0f}%"

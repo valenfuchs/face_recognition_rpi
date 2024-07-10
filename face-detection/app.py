@@ -3,6 +3,7 @@ import subprocess
 import csv
 from flask import Flask, request, render_template, redirect, url_for
 
+
 app = Flask(__name__, template_folder='templates')
 
 @app.route('/')
@@ -58,7 +59,15 @@ def capturing():
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    try:
+        # Ejecutar solo el script de reconocimiento
+        subprocess.run(['python', 'recognition.py'], check=True)
+        print("Recognition script executed successfully.")
+        return redirect(url_for('welcome'))  # Redirigir a la página de bienvenida después de reconocimiento
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error executing recognition subprocess: {e}")
+        return redirect(url_for('welcome'))
 
 @app.route('/welcome')
 def welcome():
